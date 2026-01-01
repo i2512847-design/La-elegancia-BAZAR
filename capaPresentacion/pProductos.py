@@ -206,7 +206,6 @@ else:
 
         
         with st.form("form_crear", clear_on_submit=True):
-            codigo = st.text_input("Código")
             nombre = st.text_input("Nombre")
             categoria = st.text_input("Categoría")
             marca = st.text_input("Marca")
@@ -221,7 +220,6 @@ else:
         
         if guardar:
             crear_producto({
-                "codigo": codigo,
                 "nombre": nombre,
                 "categoria": categoria,
                 "marca": marca,
