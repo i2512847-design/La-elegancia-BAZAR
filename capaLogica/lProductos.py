@@ -4,7 +4,7 @@ def listar_productos():
     return obtener_productos()
 
 def crear_producto(data):
-    if not data["nombre"]:
+    if not data.get("codigo") or not data.get("nombre"):
         raise ValueError("Código y nombre son obligatorios")
     if data["precio"] < 0 or data["stock"] < 0:
         raise ValueError("Precio y stock no pueden ser negativos")
@@ -12,7 +12,9 @@ def crear_producto(data):
     return agregar_producto(data)
 
 def editar_producto(id_producto, data):
-    if not data["nombre"]:
+    if not data.get("codigo"):
+        raise ValueError("El código no puede estar vacío")
+    if not data.get("nombre"):
         raise ValueError("El nombre no puede estar vacío")
 
     return actualizar_producto(id_producto, data)
