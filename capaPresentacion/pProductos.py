@@ -60,8 +60,10 @@ def subir_imagen_storage(file):
 
     return supabase.storage.from_("productos").get_public_url(ruta)
 
+
 def imagen_valida(url):
     return url and (url.startswith("http://") or url.startswith("https://"))
+
 
 def mostrar_imagen(url):
     if imagen_valida(url):
@@ -81,10 +83,14 @@ with st.sidebar:
     st.title("🛒 Bazar Admin")
     menu = st.radio("Menú", ["📦 Productos", "➕ Nuevo Producto"])
 
+
 st.title("Gestión de Productos")
 st.divider()
 
 
+# =========================
+# LISTAR / EDITAR PRODUCTOS
+# =========================
 if menu == "📦 Productos":
     productos = listar_productos()
 
@@ -105,6 +111,7 @@ if menu == "📦 Productos":
                 st.markdown(f"<div class='price'>S/. {p['precio']}</div>", unsafe_allow_html=True)
 
                 with st.expander("✏️ Editar / 🗑️ Eliminar"):
+                    codigo = st.text_input("Código", p["codigo"], key=f"cod{p['id_producto']}")
                     nombre = st.text_input("Nombre", p["nombre"], key=f"n{p['id_producto']}")
                     categoria = st.text_input("Categoría", p["categoria"], key=f"c{p['id_producto']}")
                     marca = st.text_input("Marca", p["marca"], key=f"m{p['id_producto']}")
@@ -138,15 +145,13 @@ if menu == "📦 Productos":
                             nueva_foto = subir_imagen_storage(file)
 
                     elif tipo_img == "URL":
-                        url = st.text_input(
-                            "URL de imagen",
-                            key=f"url{p['id_producto']}"
-                        )
+                        url = st.text_input("URL de imagen", key=f"url{p['id_producto']}")
                         if imagen_valida(url):
                             nueva_foto = url
 
                     if st.button("💾 Actualizar", key=f"u{p['id_producto']}"):
                         editar_producto(p["id_producto"], {
+                            "codigo": codigo,
                             "nombre": nombre,
                             "categoria": categoria,
                             "marca": marca,
@@ -157,79 +162,70 @@ if menu == "📦 Productos":
                             "estado": estado,
                             "foto": nueva_foto
                         })
-                        st.session_state["mensaje"] = "✅ Producto actualizado"
                         st.rerun()
 
                     if st.button("🗑️ Eliminar", key=f"x{p['id_producto']}"):
                         borrar_producto(p["id_producto"])
-                        st.session_state["mensaje"] = "🗑️ Producto eliminado"
                         st.rerun()
 
                 st.markdown('</div>', unsafe_allow_html=True)
 
 
+# ==================
+# NUEVO PRODUCTO
+# ==================
 else:
     st.subheader("➕ Nuevo producto")
 
-    contenedor = st.container()
+    st.markdown("### 🖼️ Imagen")
 
-    with contenedor:
+    tipo_img = st.radio(
+        "Tipo de imagen",
+        ["Subir archivo", "URL"],
+        horizontal=True,
+        key="tipo_img_nuevo"
+    )
 
-        
-        st.markdown("### 🖼️ Imagen")
+    foto_url = None
 
-        tipo_img = st.radio(
-            "Tipo de imagen",
-            ["Subir archivo", "URL"],
-            horizontal=True,
-            key="tipo_img_nuevo"
+    if tipo_img == "Subir archivo":
+        file = st.file_uploader(
+            "Selecciona una imagen",
+            type=["jpg", "png", "jpeg"],
+            key="file_nuevo"
         )
+        if file:
+            foto_url = subir_imagen_storage(file)
+            st.image(foto_url, width=200)
+    else:
+        foto_url = st.text_input("URL de la imagen", key="url_nuevo")
+        if foto_url:
+            st.image(foto_url, width=200)
 
-        foto_url = None
+    with st.form("form_crear", clear_on_submit=True):
+        codigo = st.text_input("Código")
+        nombre = st.text_input("Nombre")
+        categoria = st.text_input("Categoría")
+        marca = st.text_input("Marca")
+        modelo = st.text_input("Modelo")
+        descripcion = st.text_area("Descripción")
+        precio = st.number_input("Precio", min_value=0.0)
+        stock = st.number_input("Stock", min_value=0)
+        estado = st.selectbox("Estado", ["Activo", "Inactivo"])
 
-        if tipo_img == "Subir archivo":
-            file = st.file_uploader(
-                "Selecciona una imagen",
-                type=["jpg", "png", "jpeg"],
-                key="file_nuevo"
-            )
-            if file:
-                foto_url = subir_imagen_storage(file)
-                st.image(foto_url, width=200)
+        guardar = st.form_submit_button("Guardar")
 
-        else:
-            foto_url = st.text_input(
-                "URL de la imagen",
-                key="url_nuevo"
-            )
-            if foto_url:
-                st.image(foto_url, width=200)
-
-        
-        with st.form("form_crear", clear_on_submit=True):
-            nombre = st.text_input("Nombre")
-            categoria = st.text_input("Categoría")
-            marca = st.text_input("Marca")
-            modelo = st.text_input("Modelo")
-            descripcion = st.text_area("Descripción")
-            precio = st.number_input("Precio", min_value=0.0)
-            stock = st.number_input("Stock", min_value=0)
-            estado = st.selectbox("Estado", ["Activo", "Inactivo"])
-
-            guardar = st.form_submit_button("Guardar")
-
-        
-        if guardar:
-            crear_producto({
-                "nombre": nombre,
-                "categoria": categoria,
-                "marca": marca,
-                "modelo": modelo,
-                "descripcion": descripcion,
-                "precio": precio,
-                "stock": stock,
-                "estado": estado,
-                "foto": foto_url
-            })
-            st.success("✅ Producto registrado correctamente")
-
+    if guardar:
+        crear_producto({
+            "codigo": codigo,
+            "nombre": nombre,
+            "categoria": categoria,
+            "marca": marca,
+            "modelo": modelo,
+            "descripcion": descripcion,
+            "precio": precio,
+            "stock": stock,
+            "estado": estado,
+            "foto": foto_url
+        })
+        st.success("✅ Producto registrado correctamente")
