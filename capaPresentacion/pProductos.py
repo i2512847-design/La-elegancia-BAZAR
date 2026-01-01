@@ -99,7 +99,6 @@ if menu == "📦 Productos":
                 mostrar_imagen(p.get("foto"))
 
                 st.subheader(p["nombre"])
-                st.write(f"**Código:** {p['codigo']}")
                 st.write(f"**Categoría:** {p['categoria']}")
                 st.write(f"**Marca:** {p['marca']}")
                 st.markdown(f"<div class='price'>S/. {p['precio']}</div>", unsafe_allow_html=True)
