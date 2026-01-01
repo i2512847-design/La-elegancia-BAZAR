@@ -4,7 +4,7 @@ def listar_productos():
     return obtener_productos()
 
 def crear_producto(data):
-    if not data or not data["nombre"]:
+    if not data["nombre"]:
         raise ValueError("Código y nombre son obligatorios")
     if data["precio"] < 0 or data["stock"] < 0:
         raise ValueError("Precio y stock no pueden ser negativos")
